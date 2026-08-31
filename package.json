@@ -1,0 +1,47 @@
+{
+  "name": "dsh-model-caps",
+  "version": "0.2.1",
+  "private": true,
+  "type": "module",
+  "description": "Model capability editor for DeepSeek Harness Web: per-model reasoning-effort levels (thinking intensity) and input modalities (multimodal) for custom llm-pi-ai providers — fields the official Models page does not expose",
+  "main": "lib/index.js",
+  "exports": {
+    ".": "./lib/index.js",
+    "./client": "./lib/client.js",
+    "./package.json": "./package.json"
+  },
+  "files": [
+    "lib",
+    "src",
+    "scripts"
+  ],
+  "license": "MIT",
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/raomaiping-hash/dsh-model-caps.git"
+  },
+  "keywords": [
+    "deepseek-harness",
+    "dsh",
+    "plugin",
+    "model-config",
+    "reasoning-effort",
+    "multimodal"
+  ],
+  "scripts": {
+    "build:client": "node scripts/build-client.mjs",
+    "gates": "node scripts/gates/run.mjs"
+  },
+  "dsh": {
+    "client": {
+      "platform": "web",
+      "inject": [
+        "@deepseek-ai/dsh-client-ui-layout",
+        "@deepseek-ai/dsh-client-ui-settings"
+      ]
+    }
+  },
+  "peerDependencies": {
+    "react": "^18.2.0"
+  }
+}
