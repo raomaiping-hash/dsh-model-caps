@@ -56,6 +56,8 @@ model_caps {action:"set", provider:"openrouter", model:"stealth/ox-alpha",
 
 `efforts` 取值：档位→wire 字符串的字典（`off` 可为 `null`=支持关闭）、`false`（非思考模型）、`null`（删除声明恢复继承）。wire 值是实际发往端点的字符串（如 OpenAI 兼容网关的 `low`/`medium`/`high`，或按端点要求写 budget 值）。
 
+`set` 是**补丁式**：未给的字段保持原值（缺省≠删除），只有显式 `null`/`[]` 才删除字段；`defaultEffort` 同理（缺省保持，`null` 删除）。
+
 ## 门禁
 
 ```sh
@@ -73,5 +75,5 @@ node scripts/gates/run.mjs unit   # 按改动面跑最窄证据
 
 - 写路径与官方 Models 页一致：settings path op 只能走 plain object，数组子路径会被整体替换，因此模型条目修改必须整段 set `providers.<route>`（见 [decisions/implemented/0001-settings-write-path.md](decisions/implemented/0001-settings-write-path.md)）。
 - 编辑基底取 namespace 描述符的 **user 层**（稀疏），不把 schema 默认值烧进 `settings.yaml`。
-- 客户端读走共享 settings mirror（ui-settings 底座维护，`settings/document-updated` 自动刷新），写走 `connection.api.settings.mutate`。
+- 客户端读走共享 settings mirror（ui-settings 底座维护，`settings/document-updated` 自动刷新），写走 `ctx.remote.settings.mutate`（Remote 命名空间，位置参数 ns/ops/expectedRevision，应答 `{ok,error}`、冲突码 `settings/conflict`）。
 - 零官方包依赖声明——`@deepseek-ai/*` 由 profile pnpm 闭包注入，公共 npm 解析不到。

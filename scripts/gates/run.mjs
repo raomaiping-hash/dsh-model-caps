@@ -114,6 +114,13 @@ async function unitGate() {
     threw = true;
   }
   assert(threw, '非法样例：未知档位补丁必须抛错');
+  // 显式缺省 ≠ 删除：缺省字段必须保留已有值（区别于 null 的删除语义）
+  const seeded = mod.applyCapsPatch(base, { model: 'a', input: ['text', 'image'], efforts: { off: null, low: 'low' } });
+  const partial = mod.applyCapsPatch(seeded, { model: 'a', efforts: { off: null, low: 'low', medium: 'medium' } });
+  assert(partial.models[0].input.join() === 'text,image', '缺省 input 不得删除已有 input');
+  assert(partial.models[0].reasoningEfforts.medium === 'medium', '显式 efforts 覆盖 reasoningEfforts');
+  const cleared = mod.applyCapsPatch(partial, { model: 'a', input: null, efforts: null });
+  assert(!('input' in cleared.models[0]) && !('reasoningEfforts' in cleared.models[0]), '显式 null 仍删除字段');
   // override 路径
   next = mod.applyCapsPatch(base, { model: 'cat-model', override: true, input: ['text', 'image'] });
   assert(next.modelOverrides['cat-model'].input.join() === 'text,image', 'override 应写 modelOverrides');
@@ -132,11 +139,11 @@ await runGate('client', () => {
   assert(src.startsWith('window.__ModuleLoader__.load('), '必须以 __ModuleLoader__.load 开头');
   assert(src.includes('id: "dsh-model-caps"'), '注册 id 必须是包名');
   assert(/exports\.apply = apply/.test(src) && /exports\.inject = inject/.test(src), '必须导出 apply/inject');
-  assert(/var inject = \["slots", "connection", "settingsScope"\]/.test(src), 'inject 必须声明 slots/connection/settingsScope');
+  assert(/var inject = \["slots", "remote", "remote\.settings", "settingsScope"\]/.test(src), 'inject 必须声明 slots/remote.settings/settingsScope');
   assert(src.includes('"settings.section"') && src.includes('"model-caps"'), '必须注册 settings.section 槽位 model-caps');
-  assert(src.includes('api.settings.mutate') && src.includes('expectedRevision'), '写入必须走 settings.mutate 且带冲突检测');
-  // 非法样例自证：无乐观锁恢复路径的写入面不允许上线（连续保存必踩 settings-conflict）
-  assert(src.includes('settings-conflict') && src.includes('reloadHard') && src.includes('freshRevision'), '非法样例：必须处理 settings-conflict（保存时实时取修订号 + 冲突后硬刷新保留草稿）');
+  assert(src.includes('settings.mutate(') && src.includes('freshRevision'), '写入必须走 ctx.remote.settings.mutate（位置参数）且保存时取 freshRevision');
+  // 非法样例自证：无乐观锁恢复路径的写入面不允许上线（连续保存必踩 settings/conflict）
+  assert(src.includes('settings/conflict') && src.includes('reloadHard') && src.includes('freshRevision'), '非法样例：必须处理 settings/conflict（保存时实时取修订号 + 冲突后硬刷新保留草稿）');
   // 思考显示开关：稳定 DOM 标记 + 样式注入 + 持久化键
   assert(src.includes('data-variant="think"') && src.includes('dsh-model-caps-hide-think') && src.includes('dsh-model-caps.hideThinking'), '思考显示开关必须注入 [data-variant="think"] 隐藏样式并持久化偏好');
   assert(src.includes('llm-pi-ai'), '必须指向 llm-pi-ai 命名空间');
