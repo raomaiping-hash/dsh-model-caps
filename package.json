@@ -1,6 +1,6 @@
 {
   "name": "dsh-model-caps",
-  "version": "0.2.2",
+  "version": "0.2.3",
   "private": true,
   "type": "module",
   "description": "Model capability editor for DeepSeek Harness Web: per-model reasoning-effort levels (thinking intensity) and input modalities (multimodal) for custom llm-pi-ai providers — fields the official Models page does not expose",
@@ -43,5 +43,6 @@
   },
   "peerDependencies": {
     "react": "^18.2.0"
-  }
+  },
+  "dshTarget": "0.1.5-alpha.1"
 }
